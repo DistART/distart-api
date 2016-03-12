@@ -1,9 +1,10 @@
 
-var express = require('./express');
+var express = require('express');
 var path = require('path');     //used for file path
 var fs = require('fs-extra');       //File System - for file manipulation
 
 var app = express();
+var azure = require('azure-storage');
 
 
 app.get('/create', createSession);
@@ -13,15 +14,39 @@ app.get('/get/:token', getImage);
 
 
 function createSession(req, res){
+    res.send("la");
 	createToken(function(token){
 		res.send(token);
 	});
-}
+            if (part.filename) {
+
+                var size = part.byteCount - part.byteOffset;
+                var name = part.filename;
+            }
 
 
-function postImage(req, image){
-	//save the image into the queue at the right job
-	var token = req.params.token;
+            function postImage(req, image){
+                //save the image into the queue at the right job
+                var token = req.params.token;
+
+                app.post('/upload', function (req, res) {
+                    var blobService = azure.createBlobService();
+                    var form = new multiparty.Form();
+                    form.on('part', function(part) {
+
+                blobService.createBlockBlobFromStream('c', name, part, size, function(error) {
+                    if (error) {
+                        res.send({ Grrr: error });
+                    }
+                });
+            } else {
+                form.handlePart(part);
+            }
+        });
+        form.parse(req);
+        res.send('OK');
+    });
+
 }
 
 
