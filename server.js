@@ -6,7 +6,11 @@ var fs = require('fs-extra');       //File System - for file manipulation
 var app = express();
 var azure = require('azure-storage');
 
+app.get('/', function(req, res) {
+    res.send("blablabla");
+})
 
+/*
 app.get('/create', createSession);
 app.get('/post/:token', postImage);
 app.get('/pattern/:token', postPattern);
@@ -74,3 +78,4 @@ function createToken(callback){
 	//gen token and all the information for the job
 	callback(token);
 }
+    */
