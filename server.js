@@ -4,6 +4,7 @@ var path = require('path');     //used for file path
 //var fs = require('fs-extra');       //File System - for file manipulation
 
 var app = express();
+
 var azure = require('azure-storage');
 
 console.log('starting server');
@@ -11,6 +12,9 @@ console.log('starting server');
 app.get('/', function(req, res) {
     res.send("blablabla");
 });
+
+app.listen(80);
+
 
 /*
 app.get('/create', createSession);
