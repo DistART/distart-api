@@ -4,6 +4,7 @@ var path = require('path');     //used for file path
 //var fs = require('fs-extra');       //File System - for file manipulation
 
 var app = express();
+var port = process.env.PORT || 1337;
 
 var azure = require('azure-storage');
 
@@ -13,7 +14,7 @@ app.get('/', function(req, res) {
     res.send("blablabla");
 });
 
-app.listen(80);
+app.listen(port);
 
 
 /*
