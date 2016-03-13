@@ -88,12 +88,9 @@ function getImage(req, res){
 
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
-            res.status(200);
-       //     job.updateJobProperty(token, "outputBlobName", job.outputBlobName+".jpeg", function(error, result, response){
-            var stream = new Stream();
-            blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, stream, function(error, result, response){
-            res.pipe(stream);
-                //blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+            res.writeHead(200, {'Content-Type': 'image/jpeg'});
+            blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+                res.end();
                 });
         //    })
         } else {
