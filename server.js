@@ -20,6 +20,8 @@ app.get('/post/:token', postImage);
 app.get('/pattern/:token', postPattern);
 app.get('/get/:token', getImage);
 
+console.log("started");
+
 app.listen(port);
 
 function createSession(req, res){
