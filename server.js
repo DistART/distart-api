@@ -47,7 +47,7 @@ function postImage(req, res){
             form.handlePart(part);
         }
     });
-    
+
     form.parse(req);
     res.send('OK');
 }
