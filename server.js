@@ -1,7 +1,7 @@
 
 var express = require('express');
-var path = require('path');     //used for file path
-//var fs = require('fs-extra');       //File System - for file manipulation
+var path = require('path');
+var crypto = require('crypto');
 
 var multiparty = require('multiparty');
 var app = express();
@@ -23,10 +23,10 @@ app.get('/get/:token', getImage);
 app.listen(port);
 
 function createSession(req, res){
-    res.send("la");
 	createToken(function(token){
 		res.send(token);
 	});
+
 }
 
 
@@ -64,13 +64,13 @@ function getImage(req, url){
 
 }
 
-function postPattern(pattern){
+function postPattern(req, res){
 	//save the image into the job 
 	var token = req.params.token; 
 }
 
 
-function start(jobID){
+function start(req, res){
 	//start the job
 
 }
@@ -81,5 +81,11 @@ function getStatus(jobID){
 
 function createToken(callback){
 	//gen token and all the information for the job
-	callback(token);
+    var date = new Date();
+    var salt = [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds(), process.hrtime()[0], process.hrtime()[1]].join(";");
+    var hash = crypto.createHmac('sha256', 'a secret')
+        .update(salt)
+        .digest('hex');
+
+	callback(hash);
 }
