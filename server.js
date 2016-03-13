@@ -31,6 +31,7 @@ function createSession(req, res){
 
 
 function postImage(req, res){
+    console.log("post");
     //save the image into the queue at the right job
     var token = req.params.token;
 
