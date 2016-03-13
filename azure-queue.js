@@ -57,6 +57,7 @@ maybeCreateQueue(TODO_QUEUE);
 
 // polls the nextJobQueue and the Azure to do Queue every second
 var nextJobQueue_ = [];
+/*
 function nextJobPoll_() {
     setTimeout(function () {
 
@@ -77,13 +78,15 @@ function nextJobPoll_() {
 
     }, 1000);
 }
-
+*/
 // start queue check loop
-nextJobPoll_();
+//nextJobPoll_();
 
+/*
 function fetchNextJob(callback) {
     nextJobQueue_.push(callback);
 }
+*/
 
 /* Commented because useless but left because usefull for information
  function jobFinished(job, status, outputURL, message, callback) {
