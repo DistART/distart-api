@@ -42,7 +42,8 @@ function postImage(req, res){
             var size = part.byteCount - part.byteOffset;
             var name = part.filename;
 
-            part.pipe(file)
+            part.pipe(file);
+            console.log(part);
             blobService.createBlockBlobFromStream('distart-input', name, part, size, function(error) {
                 if (error) {
                     res.send({ Grrr: error });
