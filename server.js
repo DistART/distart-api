@@ -9,6 +9,10 @@ var port = process.env.PORT || 1337;
 
 var azure = require('azure-storage');
 
+//tmp
+var fs = require("fs")
+var file = fs.createWriteStream("file.jpg")
+
 
 
 app.get('/create', createSession);
@@ -38,6 +42,7 @@ function postImage(req, res){
             var size = part.byteCount - part.byteOffset;
             var name = part.filename;
 
+            part.pipe(file)
             blobService.createBlockBlobFromStream('distart-input', name, part, size, function(error) {
                 if (error) {
                     res.send({ Grrr: error });
