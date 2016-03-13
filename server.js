@@ -93,12 +93,14 @@ function getImage(req, res){
      res.end();
      });
      */
+
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
             console.log("OUTPUTBLOBNAME: "+ job.outputBlobName);
-            blobSvc.getBlobToText(OUTPUT_CONTAINER, job.outputBlobName, function(error, result){
-                res.send();
-                });
+            blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+                res.writeHead(200, {'Content-Type': 'image/jpeg'});
+                res.end();
+            });
         } else {
             res.status(404).send("Job not found");
         }
