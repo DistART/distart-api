@@ -33,29 +33,31 @@ function createSession(req, res){
 
 
 function postImage(req, res){
-    console.log("post");
     //save the image into the queue at the right job
     var token = req.params.token;
+    console.log("post" + token);
 
     var blobService = azure.createBlobService();
-    var form = new multiparty.Form();
-    form.on('part', function(part) {
-        if (part.filename) {
 
-            var size = part.byteCount - part.byteOffset;
-            var name = part.filename;
+    console.log(req.body);
+    // var form = new multiparty.Form();
+    // form.on('part', function(part) {
+    //     if (part.filename) {
 
-            part.pipe(file);
-            console.log(part);
-            blobService.createBlockBlobFromStream('distart-input', name, part, size, function(error) {
-                if (error) {
-                    res.send({ Grrr: error });
-                }
-            });
-        } else {
-            form.handlePart(part);
-        }
-    });
+    //         var size = part.byteCount - part.byteOffset;
+    //         var name = part.filename;
+
+    //         part.pipe(file);
+    //         console.log(part);
+    //         blobService.createBlockBlobFromStream('distart-input', name, part, size, function(error) {
+    //             if (error) {
+    //                 res.send({ Grrr: error });
+    //             }
+    //         });
+    //     } else {
+    //         form.handlePart(part);
+    //     }
+    // });
 
     form.parse(req);
     res.send('OK');
