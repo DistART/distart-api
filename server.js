@@ -87,13 +87,17 @@ function getImage(req, res){
     var token = req.params.token;
 
 
+    /*
+     blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+     res.writeHead(200, {'Content-Type': 'image/jpeg'});
+     res.end();
+     });
+     */
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
-            blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
-                res.writeHead(200, {'Content-Type': 'image/jpeg'});
-                res.end();
+            blobSvc.getBlobToText(OUTPUT_CONTAINER, job.outputBlobName, function(error, result){
+                res.send();
                 });
-        //    })
         } else {
             res.status(404).send("Job not found");
         }
