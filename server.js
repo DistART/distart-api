@@ -90,7 +90,10 @@ function getImage(req, res){
         if(job){
             res.status(200);
        //     job.updateJobProperty(token, "outputBlobName", job.outputBlobName+".jpeg", function(error, result, response){
-                blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+            var stream = new Stream();
+            blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, stream, function(error, result, response){
+            res.pipe(stream);
+                //blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
                 });
         //    })
         } else {
