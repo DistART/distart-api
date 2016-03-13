@@ -2,30 +2,25 @@
 var express = require('express');
 var path = require('path');
 var crypto = require('crypto');
+var azure = require('azure-storage');
+var tableJob = require('azure-table');
+
 
 var INPUT_CONTAINER = 'distart-input';
 var OUTPUT_CONTAINER = 'distart-output';
 
 
-
-var multiparty = require('multiparty');
 var app = express();
 var port = process.env.PORT || 1337;
-
-var azure = require('azure-storage');
-
 var bodyParser  = require('body-parser');
 
-//tmp
-var fs = require("fs")
-var file = fs.createWriteStream("file.jpg")
-
-
-
 app.get('/create', createSession);
-app.post('/post/:token', postImage);
-app.post('/pattern/:token', postPattern);
+app.post('/content/:token', postContent);
+app.post('/style/:token', postStyle);
 app.get('/get/:token', getImage);
+app.get('/status/:token', getStatus);
+app.get('/start/:token', start);
+
 
 app.use(bodyParser.urlencoded({
   extended: true
@@ -38,92 +33,76 @@ app.listen(port);
 
 function createSession(req, res){
 	createToken(function(token){
-		res.send(token);
+        var job = {
+            jobID: token,
+            status: 'INCOMPLETE',
+            outputBlobName: token+'_3'
+        };
+        tableJob.updateJob(job, function(error, result, response){
+            /* nothing to do yet*/
+        });
+		res.status(200).send(token);
 	});
-
 }
 
-
-function postImage(req, res){
+function postContent(req, res){
     //save the image into the queue at the right job
     var token = req.params.token;
-    console.log("post" + token);
+    console.log("postContent token: " + token);
 
-    // var s = new stream.Readable();
-
-
-    // s._read = function noop (){};
-    // s.push()
-
-    // req.rawBody = '';
-    // // req.setEncoding('utf8');
-
-    // req.on('data', function(chunk) {
-    // req.rawBody += chunk;
-    // });
-
-    // req.on('end', function() {
-    //   var blobService = azure.createBlobService();
-    //   blobService.createBlockBlobFromText (INPUT_CONTAINER, token + '_1', req.rawBody, function() {
-    //     console.log('blob stored');
-    //     fs.writeFile("file.jpg", req.rawBody);
-
-    //   }) //should be a stream
-    //   // console.log(req.rawBody);
-    // });
-
-    // req.pipe(file);
-    // console.log(req);
     var blobService = azure.createBlobService();
     blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_1', req, req.headers["content-length"], function() {
         console.log('blob stored');
     });
 
+    tableJob.updateJobProperty(token, 'imageBlobName', token + '_1', function(){
+        //Nothing to do
+    });
 
-
-
-    // var form = new multiparty.Form();
-    // form.on('part', function(part) {
-    //     if (part.filename) {
-
-    //         var size = part.byteCount - part.byteOffset;
-    //         var name = part.filename;
-
-    //         part.pipe(file);
-    //         console.log(part);
-    //         blobService.createBlockBlobFromStream('distart-input', name, part, size, function(error) {
-    //             if (error) {
-    //                 res.send({ Grrr: error });
-    //             }
-    //         });
-    //     } else {
-    //         form.handlePart(part);
-    //     }
-    // });
-
-    // form.parse(req);
-    res.send('OK');
+    res.status(200).send('OK');
 }
 
+function postStyle(req, res){
+    //save the style into the queue at the right job
+    var token = req.params.token;
+    console.log("postStyle token: " + token);
+
+    var blobService = azure.createBlobService();
+    blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_2', req, req.headers["content-length"], function() {
+        console.log('blob stored');
+    });
+
+    tableJob.updateJobProperty(token, 'patternBlobName', token + '_2', function(){
+        //Nothing to do
+    });
+
+    res.status(200).send('OK');
+}
 
 function getImage(req, url){
     var token = req.params.token;
 
 }
 
-function postPattern(req, res){
-	//save the image into the job
-	var token = req.params.token;
-}
-
-
 function start(req, res){
 	//start the job
-
+    var token = req.params.token;
+    tableJob.updateJobProperty(token, 'status', 'WAITING', function(){
+        //Nothing to do
+    });
+    res.status(200).send("Job started");
 }
 
-function getStatus(jobID){
+function getStatus(req, res){
 	//get the status of the job
+    var token = req.params.token;
+    tableJob.getJob(token, function(error, result, response, job){
+        if(job){
+            res.status(200).send(job.status);
+        } else {
+            res.status(404).send("Job not found");
+        }
+    })
 }
 
 function createToken(callback){
