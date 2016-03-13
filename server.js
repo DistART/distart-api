@@ -106,9 +106,11 @@ function start(req, res){
 	//start the job
     var token = req.params.token;
 
+    console.log('starting job id:', token);
+
     tableJob.getJob(token, function(error, result, response, job) {
         // let's check that all the data is here:
-        if (!job.imageBlobName || !job.patternBlobName) {
+        if (!job || !job.imageBlobName || !job.patternBlobName) {
             res.status(400).send("pattern or image file is missing");
         } else {
             tableJob.updateJobProperty(token, 'status', 'WAITING', function(){ //don't give a shit about this callback.
