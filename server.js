@@ -16,8 +16,8 @@ var file = fs.createWriteStream("file.jpg")
 
 
 app.get('/create', createSession);
-app.get('/post/:token', postImage);
-app.get('/pattern/:token', postPattern);
+app.post('/post/:token', postImage);
+app.post('/pattern/:token', postPattern);
 app.get('/get/:token', getImage);
 
 console.log("started");
@@ -68,8 +68,8 @@ function getImage(req, url){
 }
 
 function postPattern(req, res){
-	//save the image into the job 
-	var token = req.params.token; 
+	//save the image into the job
+	var token = req.params.token;
 }
 
 
