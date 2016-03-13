@@ -84,7 +84,7 @@ function postStyle(req, res){
 
 function getImage(req, res){
     var token = req.params.token;
-    var blobSvc = azure.createBlobService().withFilter(retryOperations);
+    var blobSvc = azure.createBlobService();
 
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
