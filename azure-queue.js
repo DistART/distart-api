@@ -82,11 +82,11 @@ function nextJobPoll_() {
 // start queue check loop
 //nextJobPoll_();
 
-/*
+
 function fetchNextJob(callback) {
     nextJobQueue_.push(callback);
 }
-*/
+
 
 /* Commented because useless but left because usefull for information
  function jobFinished(job, status, outputURL, message, callback) {
