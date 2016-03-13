@@ -3,7 +3,7 @@ var express = require('express');
 var path = require('path');
 var crypto = require('crypto');
 var azure = require('azure-storage');
-var tableJob = require('azure-table');
+var tableJob = require('./azure-table.js');
 var fs = require('fs');
 
 var INPUT_CONTAINER = 'distart-input';
