@@ -4,6 +4,8 @@ var path = require('path');
 var crypto = require('crypto');
 var azure = require('azure-storage');
 var tableJob = require('./azure-table.js');
+var queueJob = require('./azure-queue.js');
+
 var fs = require('fs');
 
 var INPUT_CONTAINER = 'distart-input';
@@ -38,9 +40,8 @@ function createSession(req, res){
             outputBlobName: token+'_3'
         };
         tableJob.updateJob(job, function(error, result, response){
-            /* nothing to do yet*/
+            res.status(200).send(token);
         });
-		res.status(200).send(token);
 	});
 }
 
@@ -52,13 +53,10 @@ function postContent(req, res){
     var blobService = azure.createBlobService();
     blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_1', req, req.headers["content-length"], function() {
         console.log('blob stored');
+        tableJob.updateJobProperty(token, 'imageBlobName', token + '_1', function(){
+            res.status(200).send('OK');
+        });
     });
-
-    tableJob.updateJobProperty(token, 'imageBlobName', token + '_1', function(){
-        //Nothing to do
-    });
-
-    res.status(200).send('OK');
 }
 
 function postStyle(req, res){
@@ -68,14 +66,10 @@ function postStyle(req, res){
 
     var blobService = azure.createBlobService();
     blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_2', req, req.headers["content-length"], function() {
-        console.log('blob stored');
+        tableJob.updateJobProperty(token, 'patternBlobName', token + '_2', function(){
+            res.status(200).send('OK');
+        });
     });
-
-    tableJob.updateJobProperty(token, 'patternBlobName', token + '_2', function(){
-        //Nothing to do
-    });
-
-    res.status(200).send('OK');
 }
 
 function getImage(req, url){
@@ -100,9 +94,10 @@ function start(req, res){
 	//start the job
     var token = req.params.token;
     tableJob.updateJobProperty(token, 'status', 'WAITING', function(){
-        //Nothing to do
+        queueJob.pushJob(token, function(){
+            res.status(200).send("Job started");
+        })
     });
-    res.status(200).send("Job started");
 }
 
 function getStatus(req, res){
