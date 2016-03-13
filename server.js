@@ -11,6 +11,7 @@ var OUTPUT_CONTAINER = 'distart-output';
 var app = express();
 var port = process.env.PORT || 1337;
 var bodyParser  = require('body-parser');
+var blobSvc = azure.createBlobService();
 
 app.get('/create', createSession);
 app.post('/content/:token', postContent);
@@ -84,12 +85,12 @@ function postStyle(req, res){
 
 function getImage(req, res){
     var token = req.params.token;
-    var blobSvc = azure.createBlobService();
+
 
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
-            res.writeHead(200, {'Content-Type': 'image/jpeg'});
             blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
+                res.writeHead(200, {'Content-Type': 'image/jpeg'});
                 res.end();
                 });
         //    })
