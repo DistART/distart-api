@@ -17,7 +17,7 @@ app.post('/content/:token', postContent);
 app.post('/style/:token', postStyle);
 app.get('/get/:token', getImage);
 app.get('/status/:token', getStatus);
-app.get('/start/:token', start);
+app.get('/start/:token/:size', start);
 
 
 app.use(bodyParser.urlencoded({
@@ -86,7 +86,6 @@ function getImage(req, res){
     var token = req.params.token;
     var blobSvc = azure.createBlobService().withFilter(retryOperations);
 
-
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
             blobSvc.getBlobToStream('OUTPUT_CONTAINER', job.outputBlobName, res, function(error, result, response){
@@ -114,9 +113,11 @@ function start(req, res){
             res.status(400).send("pattern or image file is missing");
         } else {
             tableJob.updateJobProperty(token, 'status', 'WAITING', function(){ //don't give a shit about this callback.
-                queueJob.pushJob(token, function(){
-                    res.status(200).send("Job started");
-                })
+                tableJob.updateJobProperty(token, 'params', req.params.size, function(){
+                    queueJob.pushJob(token, function(){
+                        res.status(200).send("Job started");
+                    })
+                });
             });
         }
     });
