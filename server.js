@@ -113,7 +113,7 @@ function start(req, res){
             res.status(400).send("pattern or image file is missing");
         } else {
             tableJob.updateJobProperty(token, 'status', 'WAITING', function(){ //don't give a shit about this callback.
-                tableJob.updateJobProperty(token, 'params', req.params.size, function(){
+                tableJob.updateJobProperty(token, 'params', JSON.stringify({imageSize: req.params.size}), function(){
                     queueJob.pushJob(token, function(){
                         res.status(200).send("Job started");
                     })
