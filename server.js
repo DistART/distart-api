@@ -88,12 +88,8 @@ function getImage(req, res){
 
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
+            res.status(200);
             blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
-                if(!error){
-                   res.status(200).send("OK: "+result + " "+response);
-                }else{
-                    res.status(400).send("NOK: "+error);
-                }
             });
         } else {
             res.status(404).send("Job not found");
