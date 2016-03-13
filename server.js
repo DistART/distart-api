@@ -1,12 +1,9 @@
 
 var express = require('express');
-var path = require('path');
 var crypto = require('crypto');
 var azure = require('azure-storage');
 var tableJob = require('./azure-table.js');
 var queueJob = require('./azure-queue.js');
-
-var fs = require('fs');
 
 var INPUT_CONTAINER = 'distart-input';
 var OUTPUT_CONTAINER = 'distart-output';
@@ -36,11 +33,15 @@ function createSession(req, res){
 	createToken(function(token){
         var job = {
             jobID: token,
-            status: 'INCOMPLETE',
-            outputBlobName: token+'_3'
+            status: 'INCOMPLETE'
         };
         tableJob.updateJob(job, function(error, result, response){
-            res.status(200).send(token);
+            console.log(result + " "+ response);
+            if(!error){
+                res.status(200).send(token);
+            } else{
+                res.status(400).send(error);
+            }
         });
 	});
 }
@@ -51,11 +52,16 @@ function postContent(req, res){
     console.log("postContent token: " + token);
 
     var blobService = azure.createBlobService();
-    blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_1', req, req.headers["content-length"], function() {
-        console.log('blob stored');
-        tableJob.updateJobProperty(token, 'imageBlobName', token + '_1', function(){
-            res.status(200).send('OK');
-        });
+    blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_1', req, req.headers["content-length"], function(error, result, response) {
+        if(!error){
+            console.log('blob stored: '+result + " "+response);
+            tableJob.updateJobProperty(token, 'imageBlobName', token + '_1', function(error, result, response){
+                console.log('Job property updated');
+                res.status(200).send('OK: '+result + " "+response);
+            });
+        } else{
+            res.status(400).send(error);
+        }
     });
 }
 
@@ -65,23 +71,29 @@ function postStyle(req, res){
     console.log("postStyle token: " + token);
 
     var blobService = azure.createBlobService();
-    blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_2', req, req.headers["content-length"], function() {
-        tableJob.updateJobProperty(token, 'patternBlobName', token + '_2', function(){
-            res.status(200).send('OK');
-        });
+    blobService.createBlockBlobFromStream (INPUT_CONTAINER, token + '_2', req, req.headers["content-length"], function(error, result, response) {
+        if(!error){
+            tableJob.updateJobProperty(token, 'patternBlobName', token + '_2', function(){
+                res.status(200).send('OK: '+result + " "+response);
+            });
+        }else{
+            res.status(400).send(error);
+        }
     });
 }
 
-function getImage(req, url){
+function getImage(req, res){
     var token = req.params.token;
     var blobSvc = azure.createBlobService().withFilter(retryOperations);
 
 
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
-            blobSvc.getBlobToStream('OUTPUT_CONTAINER', job.outputBlobName, fs.createWriteStream('final.jpg'), function(error, result, response){
+            blobSvc.getBlobToStream('OUTPUT_CONTAINER', job.outputBlobName, res, function(error, result, response){
                 if(!error){
-                   res.status(200).send("Job retrieved");
+                   res.status(200).send("OK: "+result + " "+response);
+                }else{
+                    res.status(400).send("NOK: "+error);
                 }
             });
         } else {
@@ -93,10 +105,18 @@ function getImage(req, url){
 function start(req, res){
 	//start the job
     var token = req.params.token;
-    tableJob.updateJobProperty(token, 'status', 'WAITING', function(){
-        queueJob.pushJob(token, function(){
-            res.status(200).send("Job started");
-        })
+
+    tableJob.getJob(token, function(error, result, response, job) {
+        // let's check that all the data is here:
+        if (!job.imageBlobName || !job.patternBlobName) {
+            res.status(400).send("pattern or image file is missing");
+        } else {
+            tableJob.updateJobProperty(token, 'status', 'WAITING', function(){ //don't give a shit about this callback.
+                queueJob.pushJob(token, function(){
+                    res.status(200).send("Job started");
+                })
+            });
+        }
     });
 }
 
