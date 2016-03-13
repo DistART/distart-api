@@ -98,8 +98,6 @@ function getImage(req, res){
         if(job){
             console.log("OUTPUTBLOBNAME: "+ job.outputBlobName);
             blobSvc.getBlobToStream(OUTPUT_CONTAINER, job.outputBlobName, res, function(error, result, response){
-                res.writeHead(200, {'Content-Type': 'image/jpeg'});
-                res.end();
             });
         } else {
             res.status(404).send("Job not found");
