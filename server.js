@@ -4,11 +4,10 @@ var path = require('path');
 var crypto = require('crypto');
 var azure = require('azure-storage');
 var tableJob = require('azure-table');
-
+var fs = require('fs');
 
 var INPUT_CONTAINER = 'distart-input';
 var OUTPUT_CONTAINER = 'distart-output';
-
 
 var app = express();
 var port = process.env.PORT || 1337;
@@ -81,7 +80,20 @@ function postStyle(req, res){
 
 function getImage(req, url){
     var token = req.params.token;
+    var blobSvc = azure.createBlobService().withFilter(retryOperations);
 
+
+    tableJob.getJob(token, function(error, result, response, job){
+        if(job){
+            blobSvc.getBlobToStream('OUTPUT_CONTAINER', job.outputBlobName, fs.createWriteStream('final.jpg'), function(error, result, response){
+                if(!error){
+                   res.status(200).send("Job retrieved");
+                }
+            });
+        } else {
+            res.status(404).send("Job not found");
+        }
+    })
 }
 
 function start(req, res){
