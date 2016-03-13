@@ -95,6 +95,7 @@ function getImage(req, res){
      */
     tableJob.getJob(token, function(error, result, response, job){
         if(job){
+            console.log("OUTPUTBLOBNAME: "+ job.outputBlobName);
             blobSvc.getBlobToText(OUTPUT_CONTAINER, job.outputBlobName, function(error, result){
                 res.send();
                 });
